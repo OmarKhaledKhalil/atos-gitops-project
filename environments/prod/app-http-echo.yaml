@@ -1,17 +1,14 @@
 apiVersion: argoproj.io/v1alpha1
 kind: Application
 metadata:
-  name: prod-simple-nginx
+  name: prod-http-echo
   namespace: argocd
 spec:
   project: default
   source:
-    repoURL: https://github.com/OmarKhaledKhalil/atos-gitops-project
+    repoURL: https://github.com/OmarKhaledKhalil/atos-gitops-project.git
     targetRevision: main
-    path: apps/simple-nginx
+    path: apps/http-echo
   destination:
     server: https://kubernetes.default.svc
     namespace: prod
-  syncPolicy:
-    syncOptions:
-    - CreateNamespace=true

@@ -1,14 +1,14 @@
 apiVersion: argoproj.io/v1alpha1
 kind: Application
 metadata:
-  name: uat-simple-nginx
+  name: uat-http-echo
   namespace: argocd
 spec:
   project: default
   source:
-    repoURL: https://github.com/OmarKhaledKhalil/atos-gitops-project
+    repoURL: https://github.com/OmarKhaledKhalil/atos-gitops-project.git
     targetRevision: main
-    path: apps/simple-nginx
+    path: apps/http-echo
   destination:
     server: https://kubernetes.default.svc
     namespace: uat
@@ -16,5 +16,3 @@ spec:
     automated:
       prune: true
       selfHeal: true
-    syncOptions:
-    - CreateNamespace=true
