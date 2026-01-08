@@ -2,7 +2,6 @@ apiVersion: networking.k8s.io/v1
 kind: Ingress
 metadata:
   name: http-echo
-  namespace: uat
   annotations:
     nginx.ingress.kubernetes.io/rewrite-target: /
 spec:
@@ -10,7 +9,7 @@ spec:
   rules:
   - http:
       paths:
-      - path: /uat
+      - path: /dev
         pathType: Prefix
         backend:
           service:

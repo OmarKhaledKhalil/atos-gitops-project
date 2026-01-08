@@ -1,0 +1,5 @@
+resources:
+  - ../../../apps/http-echo/base/deploy.yaml
+  - ../../../apps/http-echo/base/svc.yaml
+  - ingress.yaml
+namespace: dev
