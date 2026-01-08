@@ -6,7 +6,7 @@ metadata:
 spec:
   project: default
   source:
-    repoURL: REPLACE_ME_GIT_REPO_URL
+    repoURL: https://github.com/OmarKhaledKhalil/atos-gitops-project
     targetRevision: main
     path: apps/simple-nginx
   destination:
