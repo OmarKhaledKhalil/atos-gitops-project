@@ -6,6 +6,6 @@ spec:
   selector:
     app: http-echo
   ports:
-  - name: http
-    port: 80
-    targetPort: 5678
+    - name: http
+      port: 80
+      targetPort: 5678

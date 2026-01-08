@@ -1,5 +1,6 @@
-resources:
-  - ../../../apps/http-echo/base/deploy.yaml
-  - ../../../apps/http-echo/base/svc.yaml
-  - ingress.yaml
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
 namespace: uat
+resources:
+  - ../../../apps/http-echo/base
+  - ingress.yaml
