@@ -1,0 +1,4 @@
+replicaCount: 3
+text: "hello from UAT"
+ingress:
+  host: http-echo-uat.local

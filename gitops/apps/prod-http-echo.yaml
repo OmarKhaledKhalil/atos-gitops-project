@@ -8,7 +8,10 @@ spec:
   source:
     repoURL: https://github.com/OmarKhaledKhalil/atos-gitops-project.git
     targetRevision: main
-    path: apps/http-echo/overlays/prod
+    path: apps/http-echo/chart
+    helm:
+      valueFile:
+        - ../values/prod.yaml
   destination:
     server: https://kubernetes.default.svc
     namespace: prod

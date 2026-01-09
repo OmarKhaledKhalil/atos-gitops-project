@@ -1,0 +1,4 @@
+replicaCount: 1
+text: "hello from DEV"
+ingress:
+  host: http-echo-dev.local

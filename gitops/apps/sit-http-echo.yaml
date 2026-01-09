@@ -1,3 +1,4 @@
+
 apiVersion: argoproj.io/v1alpha1
 kind: Application
 metadata:
@@ -9,6 +10,9 @@ spec:
     repoURL: https://github.com/OmarKhaledKhalil/atos-gitops-project.git
     targetRevision: main
     path: apps/http-echo/overlays/sit
+    helm:
+      valueFiles:
+        - ../values/sit.yaml
   destination:
     server: https://kubernetes.default.svc
     namespace: sit

@@ -1,0 +1,4 @@
+replicaCount: 5
+text: "hello from PROD"
+ingress:
+  host: http-echo-prod.local

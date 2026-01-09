@@ -1,0 +1,4 @@
+replicaCount: 2
+text: "hello from SIT"
+ingress:
+  host: http-echo-sit.local
