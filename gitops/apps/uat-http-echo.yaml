@@ -10,7 +10,7 @@ spec:
     targetRevision: main
     path: apps/http-echo/chart
     helm:
-      valuesFiles:
+      valueFiles:
         - ../values/uat.yaml
   destination:
     server: https://kubernetes.default.svc

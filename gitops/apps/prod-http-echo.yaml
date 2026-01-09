@@ -10,7 +10,7 @@ spec:
     targetRevision: main
     path: apps/http-echo/chart
     helm:
-      valueFile:
+      valueFiles:
         - ../values/prod.yaml
   destination:
     server: https://kubernetes.default.svc
