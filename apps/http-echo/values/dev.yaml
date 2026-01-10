@@ -1,4 +1,10 @@
 replicaCount: 2
+
+image:
+  repository: omarkhaledahmed/http-echo
+  tag: dev-initial
+
 text: "hello from DEV"
+
 ingress:
   host: http-echo-dev.local
