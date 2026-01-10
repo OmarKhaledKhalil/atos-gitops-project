@@ -8,5 +8,3 @@ text: "hello from DEV"
 
 ingress:
   host: http-echo-dev.local
-
-imageTag: dev-363-031e1bb
