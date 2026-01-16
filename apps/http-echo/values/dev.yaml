@@ -2,7 +2,7 @@ replicaCount: 2
 
 image:
   repository: omarkhaledahmed/http-echo
-  tag: dev-369
+  tag: dev-1
 
 text: "hello from DEV"
 
