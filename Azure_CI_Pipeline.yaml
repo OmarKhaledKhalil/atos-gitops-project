@@ -1,0 +1,128 @@
+# azure-pipelines.yml
+# Stored ONLY in Azure Repos (CI repo). GitOps repo is GitHub and watched by Argo CD.
+
+trigger:
+  branches:
+    include:
+      - main
+
+pool:
+  vmImage: ubuntu-latest
+
+variables:
+- group: "GitHub Variables"   # provides: GITHUB_PAT (secret)
+
+- name: dockerServiceConnection
+  value: dockerhub-omarkhaledahmed
+- name: imageRepository
+  value: omarkhaledahmed/http-echo
+
+# GitHub GitOps repo (Argo CD watches this)
+- name: gitHubOwner
+  value: OmarKhaledKhalil
+- name: gitHubRepo
+  value: atos-gitops-project
+- name: gitHubBranch
+  value: main
+
+# Paths inside the GitHub repo (current model: Dockerfile + values live here)
+- name: buildContext
+  value: apps/http-echo
+- name: dockerfilePath
+  value: apps/http-echo/Dockerfile
+- name: devValuesFile
+  value: apps/http-echo/values/dev.yaml
+
+steps:
+- checkout: self
+  displayName: "Checkout CI repo (Azure Repos)"
+
+# 1) Clone GitHub GitOps repo
+- bash: |
+    set -euo pipefail
+    mkdir -p work
+    cd work
+
+    echo "Cloning: ${GITHUB_OWNER}/${GITHUB_REPO} branch=${GITHUB_BRANCH}"
+    git clone --branch "$GITHUB_BRANCH" \
+      "https://github.com/${GITHUB_OWNER}/${GITHUB_REPO}.git" \
+      gitops-repo
+
+    cd gitops-repo
+    echo "Git commit:"
+    git rev-parse --short HEAD
+  env:
+    GITHUB_OWNER: $(gitHubOwner)
+    GITHUB_REPO: $(gitHubRepo)
+    GITHUB_BRANCH: $(gitHubBranch)
+  displayName: "Clone GitHub GitOps repo"
+
+# 2) Compute immutable tag (simple + stable)
+- bash: |
+    set -euo pipefail
+    TAG="dev-$(Build.BuildId)"
+    echo "##vso[task.setvariable variable=IMAGE_TAG]$TAG"
+    echo "IMAGE_TAG=$TAG"
+  displayName: "Compute image tag"
+
+# 3) Build + push image to Docker Hub
+- task: Docker@2
+  displayName: "Build and push image (Docker Hub)"
+  inputs:
+    containerRegistry: $(dockerServiceConnection)
+    repository: $(imageRepository)
+    command: buildAndPush
+    Dockerfile: work/gitops-repo/$(dockerfilePath)
+    buildContext: work/gitops-repo/$(buildContext)
+    tags: |
+      $(IMAGE_TAG)
+
+# 4) Update dev.yaml (workspace only) -> image.tag
+- bash: |
+    set -euo pipefail
+    cd work/gitops-repo
+
+    FILE="$(devValuesFile)"
+    TAG="$(IMAGE_TAG)"
+
+    echo "Updating ${FILE} -> image.tag: ${TAG}"
+
+    awk -v newtag="$TAG" '
+      BEGIN { in_image=0 }
+      /^image:[[:space:]]*$/ { in_image=1; print; next }
+      in_image && /^[[:space:]]*tag:[[:space:]]*/ { sub(/tag:.*/, "tag: " newtag); in_image=0; print; next }
+      in_image && /^[^[:space:]]/ { in_image=0 }
+      { print }
+    ' "$FILE" > "$FILE.tmp" && mv "$FILE.tmp" "$FILE"
+
+    echo "Preview:"
+    cat "$FILE"
+  displayName: "Update dev values (image.tag)"
+
+# 5) Commit + push to GitHub (triggers Argo CD dev auto-sync)
+- bash: |
+    set -euo pipefail
+    cd work/gitops-repo
+
+    git config user.name  "Omar Khaled"
+    git config user.email "Omar_Khaled@gmail.com"
+
+    git add "$(devValuesFile)"
+
+    if git diff --cached --quiet; then
+      echo "No changes to commit."
+      exit 0
+    fi
+
+    git commit -m "ci(dev): bump http-echo image.tag to $(IMAGE_TAG) [skip ci]"
+
+    # sanitize token (avoid CR/LF or spaces causing malformed URL)
+    CLEAN_PAT="$(printf '%s' "$GITHUB_PAT" | tr -d '\r\n' | sed 's/^ *//; s/ *$//')"
+
+    git remote set-url origin \
+      "https://x-access-token:${CLEAN_PAT}@github.com/$(gitHubOwner)/$(gitHubRepo).git"
+
+    git push -v origin HEAD:$(gitHubBranch)
+  env:
+    GITHUB_PAT: $(GITHUB_PAT)
+  displayName: "Commit & push to GitHub (GitOps trigger)"
